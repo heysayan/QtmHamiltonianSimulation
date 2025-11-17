@@ -7,17 +7,32 @@ This script compares:
 3. Grover via Hamiltonian simulation (QSVT)
 """
 
+# import sys
+# import os
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+# Get the path to the directory containing this script (examples/)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Go up one level to get 'QtmHamiltonianSimulation'
+project_root = os.path.dirname(current_dir)
+
+# Add the PROJECT ROOT to sys.path (NOT 'src')
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# DEBUG: Uncomment this to verify path if it fails again
+# print(f"Project Root added to path: {project_root}")
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from grover.standard_grover import StandardGrover
-from grover.hamiltonian_grover import GroverViaTaylor, GroverViaQSVT, GroverComparison
-from utils.circuit_metrics import analyze_circuit
+from src.grover.standard_grover import StandardGrover
+from src.grover.hamiltonian_grover import GroverViaTaylor, GroverViaQSVT, GroverComparison
+from src.utils.circuit_metrics import analyze_circuit
 
 
 def compare_grover_implementations():
@@ -196,7 +211,7 @@ def scaling_analysis():
 def demo_individual_methods():
     """Demonstrate each Grover method individually."""
 
-    from utils.circuit_metrics import print_circuit_summary
+    from src.utils.circuit_metrics import print_circuit_summary
 
     print("\n" + "="*80)
     print("INDIVIDUAL METHOD DEMONSTRATIONS")

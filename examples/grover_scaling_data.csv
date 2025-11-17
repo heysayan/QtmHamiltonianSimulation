@@ -1,0 +1,4 @@
+n_qubits,standard_depth,standard_gates,taylor_depth,taylor_gates,qsvt_depth,qsvt_gates
+2,13,22,397,514,242,405
+3,21,39,1406,1883,706,1078
+4,31,70,4107,5556,1923,2775

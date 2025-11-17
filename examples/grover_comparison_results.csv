@@ -1,0 +1,4 @@
+Method,Qubits,Depth,Gates,CNOTs,Success Prob,Error
+Standard,3,21,39,0,0.9453,
+Taylor-LCU,7,2147,2871,1100,,1.76e+02
+QSVT,8,882,1347,400,,2.06e-01
