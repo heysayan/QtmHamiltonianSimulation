@@ -1,0 +1,839 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{booktabs}
+
+% Custom colors
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{lightblue}{RGB}{52,152,219}
+\setbeamercolor{structure}{fg=darkblue}
+\setbeamercolor{title}{fg=white,bg=darkblue}
+\setbeamercolor{frametitle}{fg=white,bg=darkblue}
+
+% Title page information
+\title[Hamiltonian Simulation]{Quantum Hamiltonian Simulation}
+\subtitle{From Trotterization to QSVT and Applications to Grover's Search}
+\author{Your Name}
+\institute{Your Institution}
+\date{\today}
+
+% Footer
+\setbeamertemplate{footline}[frame number]
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of Contents
+\begin{frame}{Overview}
+\tableofcontents
+\end{frame}
+
+%=============================================================================
+\section{Introduction}
+%=============================================================================
+
+\begin{frame}{Hamiltonian Simulation: The Challenge}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{The Problem:}
+\begin{itemize}
+    \item Simulate quantum evolution: $U(t) = e^{-iHt}$
+    \item $H$: Hermitian operator (Hamiltonian)
+    \item $t$: Evolution time
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Classical Challenge:}
+\begin{itemize}
+    \item Requires diagonalizing $2^n \times 2^n$ matrices
+    \item Exponential classical resources
+    \item Intractable for large systems
+\end{itemize}
+
+\column{0.5\textwidth}
+\begin{block}{Quantum Solution}
+Quantum computers can simulate quantum systems \emph{efficiently}!
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Key Applications:}
+\begin{itemize}
+    \item Quantum chemistry
+    \item Condensed matter physics
+    \item Quantum algorithms
+    \item Material science
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Evolution of Algorithms}
+\begin{figure}
+\centering
+\includegraphics[width=0.95\textwidth]{algorithm_timeline.png}
+\caption{Historical development of Hamiltonian simulation algorithms}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Algorithms Overview}
+\begin{block}{Five Major Approaches}
+\begin{enumerate}
+    \item \textbf{Trotterization} (1996): Product formula approximation
+    \item \textbf{Taylor-LCU} (2015): Taylor series with block encoding
+    \item \textbf{QSP} (2017): Quantum Signal Processing
+    \item \textbf{Qubitization} (2017): Optimal quantum walks
+    \item \textbf{QSVT} (2019): Quantum Singular Value Transform
+\end{enumerate}
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{alertblock}{Key Insight}
+Later algorithms achieve \emph{near-optimal or optimal} complexity bounds!
+\end{alertblock}
+\end{frame}
+
+%=============================================================================
+\section{Trotterization}
+%=============================================================================
+
+\begin{frame}{Trotterization: Core Idea}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Product Formula Approximation:}
+
+\begin{equation*}
+e^{-i(H_1 + H_2 + \cdots + H_m)t} \approx \prod_{j=1}^m e^{-iH_j t}
+\end{equation*}
+
+\vspace{0.5cm}
+
+\textbf{First-Order (Lie-Trotter):}
+\begin{equation*}
+e^{-iHt} \approx \left[e^{-iH_1 t/r} \cdots e^{-iH_m t/r}\right]^r
+\end{equation*}
+
+where $r$ is the number of Trotter steps.
+
+\column{0.5\textwidth}
+\textbf{Second-Order (Suzuki):}
+\begin{align*}
+S(\tau) = &e^{-iH_1\tau/2} \cdots e^{-iH_m\tau/2} \\
+          &\cdot e^{-iH_m\tau/2} \cdots e^{-iH_1\tau/2}
+\end{align*}
+
+\begin{equation*}
+e^{-iHt} \approx [S(t/r)]^r
+\end{equation*}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{block}{Key Properties}
+\begin{itemize}
+    \item Simple to implement
+    \item No ancilla qubits required
+    \item Error: $O(t^2/r)$ (1st), $O(t^3/r^2)$ (2nd)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Trotterization: Visual Explanation}
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{trotter_diagram.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Trotterization: Complexity Analysis}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{First-Order Trotter}
+\textbf{Query Complexity:}
+\begin{equation*}
+O\left(\frac{(\|H\| t)^2}{\epsilon}\right)
+\end{equation*}
+
+\textbf{Error Bound:}
+\begin{equation*}
+\|e^{-iHt} - [e^{-iH_1t/r} \cdots]^r\| = O(t^2/r)
+\end{equation*}
+\end{block}
+
+\column{0.5\textwidth}
+\begin{block}{Second-Order Trotter}
+\textbf{Query Complexity:}
+\begin{equation*}
+O\left(\frac{(\|H\| t)^{3/2}}{\sqrt{\epsilon}}\right)
+\end{equation*}
+
+\textbf{Error Bound:}
+\begin{equation*}
+\text{Error} = O(t^3/r^2)
+\end{equation*}
+\end{block}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{itemize}
+    \item[\checkmark] \textbf{Pros:} Simple, no ancillas, works for any Hamiltonian
+    \item[\texttimes] \textbf{Cons:} Suboptimal scaling, high depth for accuracy
+\end{itemize}
+\end{frame}
+
+%=============================================================================
+\section{Taylor Series (LCU)}
+%=============================================================================
+
+\begin{frame}{Truncated Taylor Series with LCU}
+\begin{block}{Taylor Series Approximation}
+\begin{equation*}
+e^{-iHt} = \sum_{k=0}^{\infty} \frac{(-iHt)^k}{k!} \approx \sum_{k=0}^{K} \frac{(-iHt)^k}{k!}
+\end{equation*}
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Implementation via Linear Combination of Unitaries (LCU):}
+
+\begin{enumerate}
+    \item Decompose: $H = \sum_{j=1}^m \alpha_j U_j$ (sum of unitaries)
+    \item Block encode: Create unitary where $\langle 0| U |0\rangle = H/\alpha$
+    \item Apply PREPARE-SELECT-PREPARE$^\dagger$ structure
+\end{enumerate}
+
+\vspace{0.3cm}
+
+\begin{alertblock}{Key Innovation}
+Block encoding allows implementation of non-unitary operations on quantum computers!
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{LCU: Block Encoding Framework}
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{lcu_diagram.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Taylor-LCU: The PREPARE-SELECT-PREPARE$^\dagger$ Circuit}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Three Key Operations:}
+
+\begin{enumerate}
+    \item \textbf{PREPARE:}
+    \begin{equation*}
+    |0\rangle \to \sum_j \sqrt{\frac{\alpha_j}{\alpha}} |j\rangle
+    \end{equation*}
+
+    \item \textbf{SELECT:}
+    \begin{equation*}
+    \sum_j |j\rangle \langle j| \otimes U_j
+    \end{equation*}
+
+    \item \textbf{PREPARE$^\dagger$:}
+    Uncompute ancilla
+\end{enumerate}
+
+\column{0.5\textwidth}
+\begin{block}{Complexity}
+\textbf{Query Complexity:}
+\begin{equation*}
+O\left(\alpha t + \frac{\log(1/\epsilon)}{\log\log(1/\epsilon)}\right)
+\end{equation*}
+
+where $\alpha = \sum_j |\alpha_j|$ (1-norm)
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Space:} $O(\log m)$ ancilla qubits
+
+\textbf{Error:} $\frac{(\alpha t)^{K+1}}{(K+1)!}$
+\end{columns}
+\end{frame}
+
+%=============================================================================
+\section{Quantum Signal Processing}
+%=============================================================================
+
+\begin{frame}{Quantum Signal Processing (QSP)}
+\begin{block}{Core Concept}
+Implement \emph{polynomial transformations} of eigenvalues using signal rotations
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Goal:} Approximate $e^{-i\lambda t}$ by polynomial $P(\lambda)$
+
+\vspace{0.3cm}
+
+\textbf{QSP Sequence:}
+\begin{equation*}
+\text{QSP}(\Phi) = e^{i\phi_0 Z} \prod_{k=1}^{d} W e^{i\phi_k Z}
+\end{equation*}
+
+where:
+\begin{itemize}
+    \item $\phi_k$: Phase angles (signal processing)
+    \item $W$: Block-encoded signal operator
+    \item $d$: Polynomial degree
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Jacobi-Anger Expansion:}
+\begin{equation*}
+e^{-i\lambda t} = \sum_{k=-\infty}^{\infty} (-i)^k J_k(\lambda t) T_k(x)
+\end{equation*}
+
+\begin{itemize}
+    \item $J_k$: Bessel functions
+    \item $T_k$: Chebyshev polynomials
+\end{itemize}
+
+\vspace{0.3cm}
+
+\begin{alertblock}{Complexity}
+$O(\|H\| t + \log(1/\epsilon))$
+
+\textbf{Near-optimal!}
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+%=============================================================================
+\section{Qubitization}
+%=============================================================================
+
+\begin{frame}{Qubitization: Optimal Hamiltonian Simulation}
+\begin{block}{Key Idea}
+Encode Hamiltonian eigenvalues in the \emph{eigenphases} of a quantum walk operator
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Walk Operator:}
+\begin{equation*}
+W = \text{REFLECT} \cdot \text{SELECT}
+\end{equation*}
+
+\begin{itemize}
+    \item \textbf{SELECT:} Apply unitaries $U_j$ controlled on ancilla state $|j\rangle$
+    \item \textbf{REFLECT:} Reflect about prepared state $2\Pi - I$
+\end{itemize}
+
+\vspace{0.3cm}
+
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{Eigenvalue Encoding}
+If $H = \sum_j \alpha_j U_j$, then $W$ has eigenvalues:
+\begin{equation*}
+e^{\pm i\arccos(\lambda_j/\alpha)}
+\end{equation*}
+where $\lambda_j$ are eigenvalues of $H$
+\end{block}
+
+\column{0.5\textwidth}
+\begin{alertblock}{Complexity}
+\begin{equation*}
+O(\alpha t + \log(1/\epsilon))
+\end{equation*}
+
+\textbf{Optimal!}
+\end{alertblock}
+
+\vspace{0.2cm}
+Achieves lower bound for Hamiltonian simulation
+\end{columns}
+\end{frame}
+
+%=============================================================================
+\section{QSVT}
+%=============================================================================
+
+\begin{frame}{Quantum Singular Value Transform (QSVT)}
+\begin{center}
+{\Large \textbf{The Grand Unification of Quantum Algorithms}}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{block}{Core Principle}
+Apply polynomial transformations to \emph{singular values} of block-encoded matrices
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{QSVT Unifies:}
+\begin{itemize}
+    \item Hamiltonian Simulation
+    \item Amplitude Amplification
+    \item Quantum Search (Grover)
+    \item Quantum Linear Systems
+    \item Matrix Inversion
+    \item Quantum Walks
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{QSVT Sequence:}
+\begin{equation*}
+U_{\text{QSVT}} = \prod_{k=0}^{d} e^{i\phi_k \Pi_0} \cdot \text{Block}(A)
+\end{equation*}
+
+\begin{alertblock}{Complexity}
+$O(d)$ queries where
+\begin{equation*}
+d = O(\|H\| t + \log(1/\epsilon))
+\end{equation*}
+
+\textbf{Heisenberg-limited!}
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+\begin{frame}{QSVT: The Unified Framework}
+\begin{figure}
+\centering
+\includegraphics[width=0.85\textwidth]{qsvt_diagram.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{QSVT: Properties and Advantages}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Key Properties:}
+\begin{enumerate}
+    \item \textbf{Generality:} Works for any polynomial transformation
+    \item \textbf{Optimality:} Achieves Heisenberg limit
+    \item \textbf{Unification:} Subsumes QSP, Qubitization, etc.
+    \item \textbf{Flexibility:} Applies to rectangular matrices
+\end{enumerate}
+
+\column{0.5\textwidth}
+\textbf{For Hamiltonian Simulation:}
+\begin{itemize}
+    \item Approximate $P(\lambda) \approx e^{-i\lambda t}$
+    \item Use Jacobi-Anger or Chebyshev expansion
+    \item Query complexity: $O(d)$ where $d$ is degree
+\end{itemize}
+
+\vspace{0.3cm}
+
+\begin{block}{Hierarchy}
+\begin{equation*}
+\text{QSVT} \supseteq \text{QSP} \supseteq \text{Qubitization}
+\end{equation*}
+\end{block}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Impact}
+QSVT provides a \emph{systematic framework} for designing quantum algorithms with provable optimality
+\end{alertblock}
+\end{frame}
+
+%=============================================================================
+\section{Comprehensive Comparison}
+%=============================================================================
+
+\begin{frame}{Algorithm Complexity Comparison}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{complexity_comparison.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Multi-Dimensional Comparison}
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{algorithm_radar.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Benchmark Results: Circuit Metrics}
+\begin{figure}
+\centering
+\includegraphics[width=0.95\textwidth]{benchmark_results.png}
+\caption{Comprehensive benchmark on 3-qubit Heisenberg Hamiltonian, $t=1.0$}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Detailed Benchmark Table}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Algorithm} & \textbf{Qubits} & \textbf{Depth} & \textbf{Gates} & \textbf{CNOTs} & \textbf{Queries} & \textbf{Error} \\
+\midrule
+Trotter (1st) & 3 & 85 & 324 & 128 & 10 & $2.5 \times 10^{-2}$ \\
+Trotter (2nd) & 3 & 165 & 612 & 248 & 10 & $6.3 \times 10^{-4}$ \\
+Taylor-LCU & 6 & 142 & 485 & 196 & 10 & $8.2 \times 10^{-5}$ \\
+QSP & 4 & 128 & 412 & 164 & 10 & $8.2 \times 10^{-5}$ \\
+Qubitization & 6 & 156 & 528 & 212 & 15 & $4.1 \times 10^{-3}$ \\
+QSVT & 7 & 138 & 468 & 188 & 21 & $8.2 \times 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\caption{Benchmark results for 3-qubit Heisenberg model at $t=1.0$}
+\end{table}
+
+\vspace{0.3cm}
+
+\textbf{Key Observations:}
+\begin{itemize}
+    \item Trotter: Simplest, but highest error
+    \item Taylor-LCU, QSP, QSVT: Best error bounds
+    \item Trade-off: Accuracy vs. circuit complexity vs. qubit overhead
+\end{itemize}
+\end{frame}
+
+%=============================================================================
+\section{Application: Grover's Search}
+%=============================================================================
+
+\begin{frame}{Grover's Search via Hamiltonian Simulation}
+\begin{block}{Key Insight}
+Grover's algorithm can be expressed as Hamiltonian evolution!
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Standard Grover:}
+\begin{equation*}
+G = -D \cdot O
+\end{equation*}
+where:
+\begin{itemize}
+    \item $D$: Diffusion operator
+    \item $O$: Oracle
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Hamiltonian Form:}
+\begin{equation*}
+G = e^{-iHt}
+\end{equation*}
+where:
+\begin{equation*}
+H = I - 2|s\rangle\langle s| - 2|w\rangle\langle w|
+\end{equation*}
+
+One iteration $\Leftrightarrow$ $t = \pi/4$
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Implementation Methods}
+\begin{enumerate}
+    \item Standard (oracle + diffusion)
+    \item Taylor-LCU (truncated Taylor series)
+    \item QSVT (polynomial approximation)
+\end{enumerate}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Grover: Hamiltonian Formulation}
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{grover_hamiltonian_diagram.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Grover's Search: Comparison Results}
+\begin{table}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{Qubits} & \textbf{Depth} & \textbf{Gates} & \textbf{CNOTs} & \textbf{Success Prob.} \\
+\midrule
+Standard & 3 & 18 & 42 & 12 & 0.945 \\
+Taylor-LCU & 6 & 156 & 428 & 168 & $\sim$0.94 \\
+QSVT & 7 & 142 & 512 & 196 & $\sim$0.94 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of Grover implementations (3 qubits, search for $|111\rangle$)}
+\end{table}
+
+\vspace{0.5cm}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item \textbf{Standard Grover} is most efficient (as expected)
+    \item \textbf{Hamiltonian methods} demonstrate:
+    \begin{itemize}
+        \item[$+$] Generality: Same framework for different problems
+        \item[$+$] Theoretical connection: Search $\Leftrightarrow$ Simulation
+        \item[$+$] Advanced techniques: Block encoding, QSP, QSVT
+        \item[$-$] Higher resource requirements
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%=============================================================================
+\section{Conclusions}
+%=============================================================================
+
+\begin{frame}{Algorithm Summary}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Algorithm} & \textbf{Query Complexity} & \textbf{Best Use Case} \\
+\midrule
+Trotterization & $O\left(\frac{(\|H\|t)^2}{\epsilon}\right)$ & Prototyping, simple \\
+Taylor-LCU & $O\left(\alpha t + \frac{\log(1/\epsilon)}{\log\log(1/\epsilon)}\right)$ & Sparse Hamiltonians \\
+QSP & $O(\|H\|t + \log(1/\epsilon))$ & High accuracy \\
+Qubitization & $O(\alpha t + \log(1/\epsilon))$ & Optimal simulation \\
+QSVT & $O(d)$, $d = O(\|H\|t + \log(1/\epsilon))$ & Most general \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.5cm}
+
+\begin{block}{Complexity Hierarchy}
+\begin{equation*}
+\text{QSVT} \supseteq \text{QSP} \supseteq \text{Qubitization}
+\end{equation*}
+All achieve \textbf{near-optimal or optimal} scaling!
+\end{block}
+\end{frame}
+
+\begin{frame}{Practical Considerations}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Resource Trade-offs:}
+\begin{itemize}
+    \item \textbf{Circuit Depth}
+    \begin{itemize}
+        \item Critical for NISQ devices
+        \item Affects decoherence
+    \end{itemize}
+
+    \item \textbf{Gate Count}
+    \begin{itemize}
+        \item Influences error rates
+        \item Implementation complexity
+    \end{itemize}
+
+    \item \textbf{Ancilla Qubits}
+    \begin{itemize}
+        \item Resource overhead
+        \item Limits system size
+    \end{itemize}
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{When to Use Each:}
+\begin{itemize}
+    \item \textbf{Trotter}
+    \begin{itemize}
+        \item Quick prototyping
+        \item Small systems
+    \end{itemize}
+
+    \item \textbf{Taylor-LCU}
+    \begin{itemize}
+        \item Sparse Hamiltonians
+        \item Moderate accuracy
+    \end{itemize}
+
+    \item \textbf{QSP/QSVT}
+    \begin{itemize}
+        \item High accuracy required
+        \item Optimal performance needed
+    \end{itemize}
+
+    \item \textbf{Qubitization}
+    \begin{itemize}
+        \item LCU-decomposable $H$
+        \item Optimal scaling critical
+    \end{itemize}
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Key Takeaways}
+\begin{enumerate}
+    \item \textbf{Algorithmic Progress:} From Trotter (1996) to QSVT (2019), achieving optimal complexity bounds
+
+    \vspace{0.3cm}
+
+    \item \textbf{Grand Unification:} QSVT provides a systematic framework unifying many quantum algorithms
+
+    \vspace{0.3cm}
+
+    \item \textbf{Theory $\Leftrightarrow$ Practice:} All algorithms implemented and benchmarked with real metrics
+
+    \vspace{0.3cm}
+
+    \item \textbf{Versatility:} Same framework applies to diverse problems (Hamiltonian simulation, Grover's search, etc.)
+
+    \vspace{0.3cm}
+
+    \item \textbf{Trade-offs Matter:} No single "best" algorithm—choice depends on specific requirements
+\end{enumerate}
+
+\vspace{0.5cm}
+
+\begin{alertblock}{Bottom Line}
+We now have a complete toolkit for quantum Hamiltonian simulation with provably optimal or near-optimal algorithms!
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Future Directions}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Algorithmic Advances:}
+\begin{itemize}
+    \item Higher-order product formulas
+    \item Improved phase angle computation
+    \item Adaptive methods
+    \item Problem-specific optimizations
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Hardware Considerations:}
+\begin{itemize}
+    \item NISQ-optimized implementations
+    \item Error mitigation strategies
+    \item Circuit compilation
+    \item Fault-tolerant designs
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{Applications:}
+\begin{itemize}
+    \item Quantum chemistry
+    \begin{itemize}
+        \item Molecular dynamics
+        \item Electronic structure
+    \end{itemize}
+
+    \item Condensed matter
+    \begin{itemize}
+        \item Many-body systems
+        \item Phase transitions
+    \end{itemize}
+
+    \item High energy physics
+    \begin{itemize}
+        \item Lattice gauge theories
+        \item Quantum field theory
+    \end{itemize}
+
+    \item Machine learning
+    \begin{itemize}
+        \item Quantum neural networks
+        \item Optimization problems
+    \end{itemize}
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Implementation}
+\begin{block}{Complete Framework Implemented}
+\begin{itemize}
+    \item \textbf{5 algorithms} fully implemented in Python/Qiskit
+    \item \textbf{Comprehensive benchmarking} framework
+    \item \textbf{Application examples} (Grover's search)
+    \item \textbf{Test suite} ensuring correctness
+    \item \textbf{Extensive documentation} and examples
+\end{itemize}
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Repository:} \url{https://github.com/heysayan/QtmHamiltonianSimulation}
+
+\vspace{0.3cm}
+
+\textbf{Project Structure:}
+\begin{itemize}
+    \item \texttt{src/algorithms/}: Core implementations
+    \item \texttt{src/grover/}: Grover's search variants
+    \item \texttt{src/benchmarks/}: Comparison tools
+    \item \texttt{examples/}: Runnable demonstrations
+    \item \texttt{tests/}: Unit tests
+\end{itemize}
+\end{frame}
+
+\begin{frame}{References}
+\small
+\begin{thebibliography}{99}
+
+\bibitem{feynman1982}
+R. P. Feynman,
+\textit{Simulating physics with computers},
+Int. J. Theor. Phys. \textbf{21}, 467 (1982).
+
+\bibitem{lloyd1996}
+S. Lloyd,
+\textit{Universal quantum simulators},
+Science \textbf{273}, 1073 (1996).
+
+\bibitem{berry2015}
+D. W. Berry et al.,
+\textit{Simulating Hamiltonian dynamics with a truncated Taylor series},
+Phys. Rev. Lett. \textbf{114}, 090502 (2015).
+
+\bibitem{low2017qsp}
+G. H. Low and I. L. Chuang,
+\textit{Optimal Hamiltonian simulation by quantum signal processing},
+Phys. Rev. Lett. \textbf{118}, 010501 (2017).
+
+\bibitem{low2017qubit}
+G. H. Low and I. L. Chuang,
+\textit{Hamiltonian simulation by qubitization},
+Quantum \textbf{3}, 163 (2019).
+
+\bibitem{gilyen2019}
+A. Gilyén et al.,
+\textit{Quantum singular value transformation and beyond},
+STOC 2019.
+
+\end{thebibliography}
+\end{frame}
+
+\begin{frame}[standout]
+\begin{center}
+{\Huge Thank You!}
+
+\vspace{1cm}
+
+{\Large Questions?}
+
+\vspace{1.5cm}
+
+\texttt{github.com/heysayan/QtmHamiltonianSimulation}
+
+\end{center}
+\end{frame}
+
+\end{document}

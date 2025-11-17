@@ -2,12 +2,22 @@
 
 ## 🚀 Get Started in 3 Steps
 
-### Step 1: View the Presentation
+### Step 1: Choose Your Format & Compile
 
-The main presentation is in **`presentation.md`**:
-
+**Option A: LaTeX Beamer (Recommended - Professional Quality)**
 ```bash
-# Option 1: Read in any markdown viewer
+# Quick compile
+./compile_latex.sh
+
+# Or using Make
+make
+
+# Opens: presentation.pdf (~30 slides, optimized for presentation)
+```
+
+**Option B: Markdown Format (Comprehensive Content)**
+```bash
+# Option 1: Read directly
 open presentation.md
 
 # Option 2: Convert to PDF
@@ -16,6 +26,10 @@ pandoc presentation.md -o presentation.pdf --pdf-engine=xelatex
 # Option 3: Create slides with Marp
 marp presentation.md --pdf --allow-local-files
 ```
+
+**Quick Recommendation:**
+- **For presenting**: Use LaTeX version (`presentation.tex`)
+- **For reading**: Use Markdown version (`presentation.md`)
 
 ### Step 2: Review the Diagrams
 

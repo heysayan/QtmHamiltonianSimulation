@@ -4,11 +4,19 @@ This folder contains the comprehensive presentation on Quantum Hamiltonian Simul
 
 ## Contents
 
-### Main Presentation
+### Main Presentations
 
-- **`presentation.md`**: Complete presentation in Markdown format (80+ slides)
-  - Can be converted to PDF, HTML, or slides using tools like Pandoc, Marp, or reveal.js
-  - Includes all theoretical background, algorithms, diagrams, and results
+**Two Format Options:**
+
+1. **`presentation.md`**: Complete presentation in Markdown format (80+ slides)
+   - Can be converted to PDF, HTML, or slides using tools like Pandoc, Marp, or reveal.js
+   - Includes all theoretical background, algorithms, diagrams, and results
+
+2. **`presentation.tex`**: Professional LaTeX Beamer presentation (~30 slides)
+   - Ready-to-compile Beamer slides with professional theme
+   - Optimized for 45-60 minute presentation
+   - Includes all diagrams and mathematical formulas
+   - See `LATEX_GUIDE.md` for compilation instructions
 
 ### Diagrams & Visualizations
 
@@ -92,30 +100,45 @@ All diagrams generated in PNG format with high resolution (300 DPI):
 
 ## How to Use This Presentation
 
-### Option 1: View as Markdown
+### Option 1: LaTeX Beamer (Recommended for Professional Presentations)
+```bash
+# Quick compile
+./compile_latex.sh
+
+# Or using Make
+make
+
+# Or manually
+pdflatex presentation.tex
+pdflatex presentation.tex  # Run twice for references
+```
+
+**See `LATEX_GUIDE.md` for detailed instructions and customization.**
+
+### Option 2: View Markdown
 Simply read `presentation.md` in any markdown viewer or editor.
 
-### Option 2: Convert to PDF (Using Pandoc)
+### Option 3: Convert Markdown to PDF (Using Pandoc)
 ```bash
-pandoc presentation.md -o presentation.pdf \
+pandoc presentation.md -o presentation_md.pdf \
   --pdf-engine=xelatex \
   -V geometry:margin=1in
 ```
 
-### Option 3: Create HTML Slides (Using Marp)
+### Option 4: Create HTML Slides from Markdown (Using Marp)
 ```bash
 npm install -g @marp-team/marp-cli
 marp presentation.md --pdf --allow-local-files
 ```
 
-### Option 4: Interactive Presentation (Using reveal.js)
+### Option 5: Interactive Presentation (Using reveal.js)
 ```bash
 pandoc presentation.md -t revealjs -s -o presentation.html \
   -V theme=white \
   -V slideNumber=true
 ```
 
-### Option 5: Run Interactive Demo
+### Option 6: Run Interactive Demo
 ```bash
 cd /path/to/presentations/endterm
 python interactive_demo.py
