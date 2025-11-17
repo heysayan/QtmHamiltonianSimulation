@@ -1,0 +1,574 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    TEMPLATE FOR BEAMER PRESENTATION (METROPOLIS THEME)
+%
+%    - Based on the structure you provided.
+%    - Includes placeholders and comments for easy customization.
+%    - Provides examples for common slide types (text, images, code).
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt]{beamer}
+
+%
+% --- CORE PACKAGES & THEME ---
+%
+\usetheme[progressbar=frametitle]{metropolis} % The modern theme you used
+\usepackage{graphicx}      % For including images
+\usepackage{booktabs}      % For professional-looking tables
+\usepackage{listings}      % For formatting code blocks
+\usepackage{appendixnumberbeamer} % For appendix numbering if needed
+
+%
+% --- CUSTOMIZATION & HELPER PACKAGES ---
+%
+\usepackage[scale=2]{ccicons} % For creative commons icons
+\usepackage{pgfplots}         % For creating plots directly in LaTeX
+\usepgfplotslibrary{dateplot} % Extension for date-based plots
+\usepackage{xspace}           % Smart spacing for commands
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+
+%
+% --- CODE LISTING STYLE (for code blocks) ---
+% Define the colors and style for your code snippets
+%
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle} % Apply this style globally to all 'listings' environments
+
+
+%
+% --- TITLE PAGE INFORMATION ---
+% Replace the bracketed content with your own.
+%
+\title[Short Title for Footer]{Logic Synthesis of Quantum Circuits}
+\subtitle{Hamiltonian Simulation problem}
+\date{\today} % Or a specific date, or leave it empty with \date{}
+\author[Sayan]{Mohd Sayanur Rahman(2021PH10221) \\ \vspace{0.2cm} \small{Supervised by: Prof. Kolin Paul}}
+\institute[iitd]{CSE / IIT-Delhi}
+% Optional: Add a logo to the title page
+% \titlegraphic{\hfill\includegraphics[height=1.5cm]{path/to/your/logo.pdf}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%    START OF THE DOCUMENT
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+% --- TITLE SLIDE ---
+% This command generates the title page based on the info above.
+\maketitle
+
+% --- TABLE OF CONTENTS SLIDE ---
+% This is generated automatically from your \section commands.
+\begin{frame}{Table of contents}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents % You can add [hideallsubsections] to simplify it
+\end{frame}
+
+
+%
+% --- SECTION 1: Hamiltonian sim problem  intro ---
+% Use \section to organize your presentation. It appears in the ToC.
+%
+
+% ---- Slide 1.1 -----
+\section{Foundations of Hamiltonian Simulation}
+\begin{frame}{What is the Hamiltonian Simulation Problem?}
+    \frametitle{Predicting the future of a quantum system}
+
+    At its core, quantum mechanics is governed by the \textbf{Schrödinger equation}, which describes how a system's state, $|\psi\rangle$, evolves over time.
+    
+    \begin{alertblock}{The Schrödinger Equation}
+        $$ i\hbar \frac{d}{dt}|\psi(t)\rangle = H|\psi(t)\rangle $$
+    \end{alertblock}
+    
+    \begin{itemize}
+        \item The \textbf{Hamiltonian ($H$)} is the energy operator of the system. It's the "rulebook" that dictates all dynamics.
+        \item Given an initial state $|\psi(0)\rangle$, the state at a later time $t$ is found by applying the time-evolution operator $U(t)$, which is $=e^{-iHt/\hbar}$ when Hamiltonian is time-independent.
+    \end{itemize}
+
+    \begin{block}{The Goal of Simulation}
+        Our task is to simulate the effect of this operator:
+        $$ |\psi(t)\rangle = e^{-iHt/\hbar}|\psi(0)\rangle $$
+        Essentially, we want to build a quantum circuit that effectively performs this transformation.
+    \end{block}
+
+\end{frame}
+
+% --- SLIDE 1.2 ----
+\begin{frame}{Why is this Hard for Classical Computers?}
+    \frametitle{The curse of dimensionality}
+
+    The state of a quantum system lives in a mathematical space called a Hilbert space. The size of this space grows \textbf{exponentially} with the number of particles ($N$).
+
+    \begin{itemize}
+        \item For a system of $N$ qubits, you need to track $2^N$ complex numbers to describe its state vector $|\psi\rangle$.
+        \item The Hamiltonian $H$ is a $2^N \times 2^N$ matrix.
+    \end{itemize}
+    
+    \begin{alertblock}{Exponential Scaling is Intractable}
+        \begin{itemize}
+            \item \textbf{10 qubits:} $2^{10} \approx 1,000$ numbers. (Easy)
+            \item \textbf{30 qubits:} $2^{30} \approx 1,000,000,000$ numbers. (Challenging)
+            \item \textbf{300 qubits:} Requires more classical bits to store the state vector than there are atoms in the observable universe. (Impossible)
+        \end{itemize}
+    \end{alertblock}
+
+    Simulating the matrix exponential $e^{-iHt}$ on a classical computer is fundamentally doomed by this scaling.
+
+\end{frame}
+
+% --- SLIDE 1.3 ----
+\begin{frame}{Feynman's Vision: A Quantum Solution}
+    \frametitle{"Nature isn't classical, dammit..."}
+
+    In 1981, Richard Feynman proposed a radical solution to the classical simulation roadblock:
+
+    \begin{itemize}
+        \item \textbf{The Core Idea:} Instead of using classical computers, use a controllable quantum system to simulate another, less accessible quantum system.
+
+        \item \textbf{The Conjecture:} Feynman conjectured that a "\textbf{universal quantum simulator}" could be built to simulate any quantum system that evolves according to local interactions.
+
+        \item \textbf{The Proof:} This crucial idea was formally \textbf{proven by Seth Lloyd in 1996}, establishing a firm theoretical foundation for the field.
+
+        \item \textbf{The Impact:} This work established quantum simulation as one of the most promising and important applications for quantum computers.
+    \end{itemize}
+
+    \vspace{0.5cm} % Adjust vertical space before citations
+    \tiny
+    \textbf{References:} \\
+    \textbullet~R. Feynman, "Simulating Physics with Computers," International Journal of Theoretical Physics 21, 467-488 (1982). \\
+    \textbullet~S. Lloyd, "Universal quantum simulators," Science 273, 1073-1078 (1996). \\
+    \textbullet~I. M. Georgescu, S. Ashhab, and F. Nori, "Quantum simulation," Reviews of Modern Physics 86, 153 (2014).
+
+\end{frame}
+
+\begin{frame}{Framework for Our Simulation Approach}
+    \frametitle{Setting the stage: Key assumptions}
+
+    Before building circuits, we establish two principles that will guide our methods throughout this presentation.
+
+    \begin{itemize}
+        \item \textbf{1. The Paradigm: Divide and Conquer} \\
+        The core strategy is to break down the complex evolution operator $e^{-iHt}$ into a sequence of simpler, more manageable operations that we know how to implement easily with quantum gates.
+
+        \item \textbf{2. The Target: Sparse Hamiltonians} \\
+        We focus exclusively on \textbf{sparse Hamiltonians}, which generalizes for systems with \textbf{local interactions} (each particle only interacts with a  constant number of neighbours) and  Fermionic systems.
+        
+        \begin{alertblock}{Why not dense Hamiltonians?}
+            Simulating dense Hamiltonians is inefficient even on a quantum computer. Their complexity can scale exponentially, defeating the purpose of the quantum approach.
+        \end{alertblock}
+    \end{itemize}
+    
+    \vspace{0.5cm}
+    \tiny
+    \textbf{Reference:} \\
+    \textbullet~A. M. Childs and R. Kothari, "Limitations on the simulation of non-sparse Hamiltonians," Quantum Info. Comput. 10, 669-684 (2010).
+
+\end{frame}
+
+
+\section{Trotter Product Formulas}
+
+\begin{frame}{Circuit Design: The First Blueprint (Lloyd, 1996)}
+    \frametitle{Turning theory into a circuit}
+    Seth Lloyd's 1996 paper provided the first concrete algorithm for building a quantum circuit to simulate a local, sparse Hamiltonian.
+    \begin{block}{The Method: A Divide and Conquer Approach}
+        \begin{enumerate}
+            \item \textbf{Decompose:} Break the Hamiltonian $H$ into simple local terms: $H = \sum_{j=1}^{L} H_j$. Each $H_j$ typically acts on $O(1)$ qubits.
+            \item \textbf{Recombination:} Apply the first-order Lie-Trotter formula. This \textbf{approximates} the total evolution as a sequence of simple evolutions:
+            $$ e^{-iHt} \approx \left( e^{-iH_1 t/r} e^{-iH_2 t/r} \cdots e^{-iH_L t/r} \right)^r $$
+            Note: For commuting operators $H_j$, this formula is exact.
+        \end{enumerate}
+    \end{block}
+    \textbf{Significance:} This proved that simulating local quantum systems is efficient on a quantum computer (in the complexity class \textbf{BQP}).
+    \vspace{0.2cm}
+
+
+    \tiny \textbf{Reference:} S. Lloyd, "Universal quantum simulators," Science 273, 1073-1078 (1996).
+\end{frame}
+
+\begin{frame}{Advanced Simulation Techniques}
+    \frametitle{Improving Efficiency}
+
+    Key advances reduce simulation costs by improving formulas and circuit structure:
+
+    \begin{itemize}
+        \item \textbf{Higher-Order Formulas (BACS'07):} Symmetrically ordering terms cancels leading errors, significantly boosting accuracy for a given number of gates.
+        \begin{itemize}
+            \item \textit{Example (2nd Order):} For $H = A + B$, one step is approximated as:
+            $$ e^{-i(A+B)\delta t} \approx e^{-iA \delta t/2} e^{-iB \delta t} e^{-iA \delta t/2} $$
+        \end{itemize}
+
+        \item \textbf{Optimized Decompositions (Childs $\&$ Kothari, 2011):} Uses graph theory ("star decomposition") to generate shallower, more parallel circuits better suited for noisy hardware.
+
+        \item \textbf{Query Complexity:} For error $\epsilon$, time $t$, sparsity $d$, formula order $k$ and assuming $||H||_{\max}\leq1$:
+        $$ \text{Complexity} = \tilde{O}\left( d^3 t \cdot (dt/\epsilon)^{1/2k}\right) $$
+        Note: The dependence on sparsity $d$ is provably at least quadratic, due to decomposing d-sparse matrix to $O(d^2)$ 1-sparse matrices.
+    \end{itemize}
+
+    \vspace*{\fill}
+    \tiny
+    \textbf{References:} 
+    D. W. Berry et al., FOCS'07. $|$ A. M. Childs,  R. Kothari, TQC 2011.
+
+\end{frame}
+
+
+\section{LCU+OAA Method}
+
+\begin{frame}{Block Encode "Probabilistic Implementation"}
+    Let V be a Unitary such that\\
+    $$\forall|\psi\rangle, V|{0^m}\rangle\otimes|{\psi}\rangle = \sqrt{p}|0^m\rangle\otimes U|\psi\rangle + \sqrt{1-p}\;|\perp\rangle \text{        i.e. } V = \begin{pmatrix}
+            \sqrt{p}U & * & *\\
+            * & * & *\\
+            * & * & *
+            \end{pmatrix}$$
+    where $|\perp\rangle$ is supported in the subspace orthogonal to $|0^m\rangle$.\\
+    \textbf{Goal:} given a circuit for V, apply U on arbitrary state $|\psi\rangle$.\\
+    \textbf{Solution 1 (Classical repetitions)}\\
+    \begin{itemize}
+        \item Apply V to $|\psi\rangle$, and measure the first $m$ qubits.
+        \item If we observe $|0^m\rangle$, then we're done. Else, repeat.
+    \end{itemize}
+    \textbf{Cost:}
+    \begin{itemize}
+        \item $O(1/p)$ expected uses of V.
+        \item $O(1/p)$ copies of $|\psi\rangle$. (We might not have multiple copies of $|\psi\rangle$)
+    \end{itemize}
+    
+\end{frame}
+\begin{frame}{Block Encode "Probabilistic Implementation" -2}
+    \textbf{Solution 2 (Amplitude Amplification)}\\
+    \begin{itemize}
+        \item Repeat $O(1/\sqrt{p})$ times:\\
+            Apply $V$. Reflect about $|0^m\rangle|\psi\rangle$. Apply $V^{\dagger}$. Reflect about $|0^m\rangle|\psi\rangle$.
+    \end{itemize}
+    \textbf{Cost:}
+    \begin{itemize}
+        \item $O(1/\sqrt{p})$ Uses of $V$ and $V^\dagger$.
+        \item $O(1/\sqrt{p})$ Uses of reflection about $|0^m\rangle|\psi\rangle$. (We might not be able to do this)
+    \end{itemize}
+    \textbf{Solution 3 (Oblivious Amplitude Amplification)}\\
+    \begin{itemize}
+        \item Repeat $O(1/\sqrt{p})$ times:\\
+            Apply $V$. Reflect about $|0^m\rangle$. Apply $V^{\dagger}$. Reflect about $|0^m\rangle$.
+    \end{itemize}
+    \textbf{Cost:}
+    \begin{itemize}
+        \item $O(1/\sqrt{p})$ Uses of $V$ and $V^\dagger$.
+    \end{itemize}
+    \textbf{Required:} $U$ has to be (close to) Unitary for this to work.
+    
+\end{frame}
+
+\begin{frame}{A Linear Combination of Unitaries (LCU)}
+    \frametitle{The core idea behind LCU-based simulation}
+
+    To implement an operator $B = \sum_i \alpha_i W_i$ ($W_i$ are easy-to-implement), we use a \textbf{PREPARE} unitary to create a state $|A\rangle$ on ancillas and a \textbf{SELECT} unitary on main register controlled by the ancillary qubits:
+    $$ \texttt{PREPARE}|0\rangle = |A\rangle = \frac{1}{\sqrt{\|\alpha\|_1}} \sum_i \sqrt{\alpha_i} |i\rangle \quad ; \quad \texttt{SELECT}_W = \sum_i |i\rangle\langle i| \otimes W_i $$
+    
+    Applying $\texttt{SELECT}_W$ to the combined state $|A\rangle |\psi\rangle$ yields:
+    $$ \frac{1}{\sqrt{\|\alpha\|_1}} \sum_i \sqrt{\alpha_i} |i\rangle W_i |\psi\rangle = \frac{1}{\|\alpha\|_1} \left( |A\rangle (B|\psi\rangle) + |A^\perp\rangle \dots \right) $$
+    
+    This block-encodes $B$ and as earlier described, success could be made deterministic using \textbf{OAA} if $B$ is unitary, else using AA.
+\end{frame}
+
+\begin{frame}{Application to Hamiltonian Simulation}
+    \frametitle{Using LCU for Hamiltonian evolution}
+    Given a local Hamiltonian $H = \sum_j \beta_j H_j$, implement the unitary $e^{-iHt}$.
+
+    \begin{enumerate}
+        \item \textbf{Represent $H$ as a Linear Combination of Unitaries}
+        \begin{itemize}
+            \item We have $H = \sum_j H_j$, where each $H_j$ acts on $O(1)$ qubits.
+            % \item Express each $H_j$ (or $H$ directly) in the Pauli basis: $H = \sum_k \beta_k P_k$, where $P_k$ are unitary Pauli strings.
+        \end{itemize}
+
+        \item \textbf{Represent $e^{-iHt}$ as a Linear Combination of Unitaries}
+        \begin{itemize}
+            \item Use the Taylor series expansion for $e^{-iH\delta t}$:
+            $$ e^{-iH\delta t} = I - iH\delta t + \frac{(iH\delta t)^2}{2!} - \dots = \sum_{k=0}^{\infty} \sum_{l_1,l_2,..,l_k=1}^{k} \frac{-i\delta t}{k!}\beta_{l_1}\beta_{l_2}...\beta_{l_k}H_{l_1}H_{l_2}...H_{l_k} $$
+            \item This infinite series (truncated to finite order for practical use) is a linear combination of unitaries, and is close to a Unitary.
+        \end{itemize}
+
+        \item \textbf{Apply LCU and OAA}
+        \begin{itemize}
+            \item Use the LCU block-encoding method to probabilistically implement the truncated Taylor series.
+            \item Apply Oblivious Amplitude Amplification (OAA) to make the simulation deterministic and achieve high fidelity.
+        \end{itemize}
+        \textbf{Query Complexity:} $O(d^2 t\frac{\log(d^2 t/\epsilon)}{\log\log(d^2 t/\epsilon)})$     ( where $||H||_{\max}\leq1$)
+
+    \end{enumerate}
+
+    
+    \vspace{0.2cm}
+    \tiny
+    \textbf{Reference:} \\
+    \textbullet~D. W. Berry et al., "Simulating Hamiltonian dynamics with a truncated Taylor series," Phys. Rev. Lett. 114, 090502 (2015).
+
+\end{frame}
+
+\section{QSP based approach}
+
+\begin{frame}{A New Paradigm: Quantum Signal Processing (QSP)}
+    \frametitle{Beyond step-by-step simulation}
+
+    QSP is a powerful alternative to Trotter and LCU methods. Instead of breaking the evolution into many small time-steps, QSP constructs the desired evolution operator in a single, continuous sequence.
+
+    \begin{block}{The Core Idea}
+        The key is to map the properties of the multi-qubit Hamiltonian ($H$) onto the rotation angle of a \textbf{single ancilla qubit}. We then precisely control this ancilla with a sequence of rotations to sculpt the final evolution unitary.
+    \end{block}
+    
+    \begin{itemize}
+        \item \textbf{Analogy:} If Trotterization is like approximating a curve with many small straight lines, QSP is like using a Fourier series to construct the entire curve perfectly in one go.
+        
+        \item \textbf{Goal:} Implement $e^{-iHt}$ not as a product of exponentials, but as a polynomial of a simpler operator that's easy to build.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{The Core Components of QSP}
+    \frametitle{The Signal and the Processor}
+
+    The QSP algorithm is built from two main components that interact via a single ancilla qubit.
+
+    \begin{itemize}
+        \item \textbf{1.The Signal Operator ($W$)}
+        \begin{itemize}
+            \item We first construct a "quantum walk" operator, $W$, that encodes the Hamiltonian $H$.
+            \item The eigenvalues of $H$ (let's call them $\lambda_j$) are encoded in the phase that $W$ imparts on the ancilla via \textbf{Phase Kickback}. For an eigenvector $|\psi_j\rangle$ of $H$, the ancilla is effectively rotated by an angle $\theta_j = \arccos(\lambda_j/\alpha)$ about Z.
+        \end{itemize}
+        
+        \vspace{0.5cm}
+        
+        \item \textbf{2. The Signal-Processing Circuit ($U_{\vec{\phi}}$)}
+        \begin{itemize}
+            \item This is a sequence of single-qubit rotations applied \textit{only to the ancilla}, interleaved with applications of the signal operator $W$.
+            \item The sequence is controlled by a set of classically computed angles $\vec{\phi} = (\phi_0, \phi_1, \dots, \phi_k)$, which act as the "program" for the simulation.
+        \end{itemize}
+    \end{itemize}
+    
+\end{frame}
+
+\begin{frame}{The Signal and the Processor -2}
+    \begin{figure}
+        \centering
+        % Adjust the width to control the image size on the slide
+        \includegraphics[width=0.5\linewidth]{W.png}
+        \caption{Phase Kickback}
+        \label{fig:signal} % A label for referencing it later
+    \end{figure}
+    \begin{figure}
+        \centering
+        % Adjust the width to control the image size on the slide
+        \includegraphics[width=0.7\linewidth]{Wall.png}
+        \caption{QSP}
+        \label{fig:qsp} % A label for referencing it later
+    \end{figure}
+\end{frame}
+
+\begin{frame}{How QSP Simulates Evolution}
+    \frametitle{Sculpting a polynomial with phase shifts}
+
+    The sequence of rotations on the ancilla effectively creates a polynomial transformation of the signal operator's eigenvalues.
+
+    \begin{block}{Finding the "Magic" Angles $\vec{\phi}$}
+        \begin{itemize}
+            \item The goal is to find a set of angles $\vec{\phi}$ that make the overall transformation on the ancilla look like the target evolution, $e^{-i\lambda_j t}$.
+            
+            \item We need to find a polynomial $P(x)$ that approximates the function $e^{-ixt}$. The angles $\vec{\phi}$ are then a unique mapping of the coefficients of this polynomial.
+            
+            \item This is achieved classically and efficiently using the \textbf{Jacobi-Anger expansion}, which expresses $e^{-it \sin(\theta)}$ as a Fourier series—giving us the target polynomial we need.
+        \end{itemize}
+    \end{block}
+    
+    By measuring the ancilla in the $|+\rangle$ state, we project the system into the desired final state $e^{-iHt}|\psi\rangle$.
+
+\end{frame}
+
+\begin{frame}{QSP Results and Optimality}
+    \frametitle{State-of-the-art in simulation}
+
+    QSP provides the most efficient known Hamiltonian simulation algorithm in terms of query complexity.
+
+    \begin{block}{Query Complexity}
+        The number of queries to the Hamiltonian oracle scales as:
+        $$ \textbf{Complexity} = O\left( ||H||t + \frac{\log(1/\epsilon)}{\log\log(1/\epsilon)}\right) $$
+        This notation uses $\tau \approx ||H||t$ for brevity.
+    \end{block}
+    
+    \begin{itemize}
+        \item \textbf{Optimal Scaling:} The complexity is proven to be optimal.It scales \textbf{linearly with time $t$} and only \textbf{logarithmically with the inverse error $1/\epsilon$}.
+        
+        \item \textbf{Low Qubit Overhead:} The entire signal processing routine uses only \textbf{one additional ancilla qubit}.
+        
+        \item \textbf{Additive Error:} Unlike Trotter methods where errors compound multiplicatively, the error in QSP is additive, making it more robust for long-time simulations.
+    \end{itemize}
+    \tiny
+    \textbullet~G. H. Low and I. L. Chuang, "Optimal Hamiltonian simulation by quantum signal processing," Phys. Rev. Lett. 2017.
+
+\end{frame}
+
+\section{Demonstration}
+
+
+\begin{frame}{Case Study: Simulating the Hydrogen Atom}
+    \frametitle{Putting the algorithms to the test ⚛️}
+
+    To compare these advanced methods, we'll use a tangible physical system: a neutral Hydrogen atom.
+
+    \begin{block}{From Physics to Qubits}
+        \begin{enumerate}
+            \item \textbf{Fermionic Hamiltonian:} We start with the second-quantized Hamiltonian for the Hydrogen atom's electron.
+
+            \item \textbf{Jordan-Wigner Transform:} We use the Jordan-Wigner mapping to convert the fermionic operators into qubit operators (Pauli strings).
+
+            \item \textbf{2-Qubit Hamiltonian:} For a minimal basis set, this results in a simple 2-qubit Hamiltonian that is a sum of Pauli terms:
+            $$ H = c_0 II + c_1 IZ + c_2 ZI + c_3 ZZ $$
+            This simple, tangible Hamiltonian is the target for our simulation algorithms.
+        \end{enumerate}
+    \end{block}
+
+\end{frame}
+
+\begin{frame}{Method 1: The Suzuki-Trotter Approach}
+    \frametitle{The direct, step-by-step method}
+
+    The Trotter method provides the most direct way to construct the evolution circuit.
+
+    \begin{itemize}
+        \item \textbf{The "Divide" Step:} The Hamiltonian is already a sum of Pauli terms, $H = \sum_k c_k P_k$.
+
+        \item \textbf{The "Conquer" Step:} Since all terms in our Hydrogen Hamiltonian happen to commute, the Trotter formula is exact and doesn't require splitting into small time-steps ($r=1$):
+        $$ e^{-iHt} = \prod_k e^{-i c_k P_k t} $$
+        
+        \item \textbf{Circuit Synthesis:}
+        \begin{itemize}
+            \item Each term $e^{-i\theta P_k}$ is compiled into a small circuit. For example, $e^{-i\theta ZZ}$ is built from two CNOTs and a single $R_z$ rotation.
+            \item The final circuit is constructed by simply concatenating these small gate sequences.
+        \end{itemize}
+    \end{itemize}
+    
+    \textbf{Expected Result:} A relatively simple circuit with no ancilla qubits and a clear, intuitive structure.
+
+\end{frame}
+
+\begin{frame}{Method 2: LCU with Truncated Taylor Series}
+    \frametitle{Building the operator as a sum}
+
+    This method simulates the evolution by first approximating the operator $e^{-iHt}$ itself.
+
+    \begin{itemize}
+        \item \textbf{The "Divide" Step (Taylor Expansion):}
+        We expand the evolution operator to a fixed order (e.g., order 2) to get an approximate unitary, $U_{approx}$:
+        $$ e^{-iHt} \approx U_{approx} = I - iHt + \frac{(-iHt)^2}{2} $$
+        
+        \item \textbf{The "Conquer" Step (LCU + OAA):}
+        \begin{itemize}
+            \item We explicitly calculate $U_{approx}$ by expanding $(H)^2$. The result is a new, more complex linear combination of Pauli strings.
+            \item This combination is then implemented probabilistically using the LCU block-encoding method (\texttt{PREPARE} and \texttt{SELECT}).
+            \item Oblivious Amplitude Amplification (OAA) is used to make the implementation deterministic.
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Expected Result:} A more complex circuit requiring ancilla qubits, with fidelity determined by the Taylor series truncation order.
+
+\end{frame}
+
+\begin{frame}{Method 3: Quantum Signal Processing (QSP)}
+    \frametitle{The optimal, signal-processing method}
+
+    QSP provides a fundamentally different construction that is known to be optimal in its use of the Hamiltonian.
+
+    \begin{itemize}
+        \item \textbf{The "Divide" Step (Block-Encoding):}
+        The entire Hamiltonian $H$ is first block-encoded into a "quantum walk" operator $W$(signal). This operator imparts a phase on a single ancilla qubit that is a function of $H$'s eigenvalues via \textbf{Phase Kickback}.
+        
+        \item \textbf{The "Conquer" Step (Signal Processing):}
+        \begin{itemize}
+            \item A long sequence of single-qubit rotations is applied to the ancilla, interleaved with applications of the walk operator $W$.
+            \item These rotation angles are classically pre-computed to transform the signal imparted by $W$ into the desired final evolution $e^{-iHt}$.
+        \end{itemize}
+    \end{itemize}
+
+    \textbf{Expected Result:} A circuit with minimal ancilla overhead (only one qubit) and the best possible scaling with respect to simulation time and error.
+
+\end{frame}
+
+
+\begin{frame}{Results: A Side-by-Side Comparison}
+    \frametitle{Comparing the outcomes for the Hydrogen atom}
+
+    After synthesizing the circuits for each method, we compare them across key metrics.
+
+    \begin{table}
+        \centering
+        \begin{tabular}{l c c c}
+            \toprule
+            \textbf{Metric} & \textbf{Suzuki-Trotter} & \textbf{LCU (Taylor)} & \textbf{QSP} \\
+            \midrule
+            \textbf{Circuit Size} & Low & High & Medium-High \\
+            (Total Gates) & & & \\
+            \midrule
+            \textbf{Depth} & \textbf{Lowest} & Highest & Medium \\
+            \midrule
+            \textbf{2-Qubit Gates} & \textbf{Lowest} & Highest & Medium \\
+            \midrule
+            \textbf{Ancilla Qubits} & 0 & 2 & \textbf{1} \\
+            \midrule
+            \textbf{Fidelity / Accuracy} & 100\%* (For & High (fixed by & \textbf{Very High} \\
+            & this case) & Taylor order) & (optimal scaling) \\
+            \bottomrule
+        \end{tabular}
+        \caption{A qualitative comparison of resource requirements for the H atom simulation.}
+        \tiny
+        * Due to exact simulation as paulis of Hamiltonian here commutes.
+    \end{table}
+
+\end{frame}
+\begin{frame}{Results: A Side-by-Side Comparison -2}
+    \begin{block}{Key Observations}
+        \begin{itemize}
+            \item For this simple commuting Hamiltonian, Trotter provides the most direct and gate-efficient circuit.
+            \item QSP confirms its theoretical advantage, achieving the highest fidelity with only one ancilla qubit.
+            \item The LCU method, while accurate, requires a significantly higher overhead in both ancillas and total gates for this specific problem.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+% --- FINAL "THANK YOU" SLIDE ---
+% The { ... } and [standout] create a visually distinct final slide.
+{
+\begin{frame}[standout]
+  Thank you!
+\end{frame}
+}
+
+\end{document}

@@ -253,7 +253,7 @@ def grover_hamiltonian_pauli(n_qubits: int, marked_states: Optional[List[int]] =
         SparsePauliOp representing Grover's Hamiltonian
     """
     from qiskit.quantum_info import SparsePauliOp
-    from ..utils.hamiltonian_utils import pauli_decomposition
+    from src.utils.hamiltonian_utils import pauli_decomposition
 
     H_matrix = grover_to_hamiltonian(n_qubits, marked_states)
     return pauli_decomposition(H_matrix)

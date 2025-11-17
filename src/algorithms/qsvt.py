@@ -437,7 +437,7 @@ def qsvt_optimal_simulation(
     hamiltonian: SparsePauliOp,
     time: float,
     target_error: float
-) -> Tuple[QuantumCircuit, Dict]:
+) -> Tuple[QuantumCircuit, dict]:
     """
     Build QSVT circuit with automatically determined parameters for target error.
 
