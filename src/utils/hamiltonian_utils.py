@@ -3,6 +3,7 @@ Utility functions for Hamiltonian operations and manipulations.
 """
 
 import numpy as np
+import scipy.linalg
 from qiskit.quantum_info import SparsePauliOp, Operator
 from qiskit import QuantumCircuit
 from typing import List, Tuple, Union
