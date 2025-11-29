@@ -22,8 +22,8 @@
 % Title page information
 \title[Hamiltonian Simulation]{Quantum Hamiltonian Simulation}
 \subtitle{From Trotterization to QSVT and Applications to Grover's Search}
-\author{Your Name}
-\institute{Your Institution}
+\author{Mohd Sayanur Rahman (2021PH10221) \\ Supervisor: Prof. Kolin Paul}
+\institute{IIT-Delhi}
 \date{\today}
 
 % Footer
@@ -141,7 +141,7 @@ e^{-iHt} \approx [S(t/r)]^r
 \end{equation*}
 \end{columns}
 
-\vspace{0.5cm}
+\vspace{0.1cm}
 
 \begin{block}{Key Properties}
 \begin{itemize}
@@ -361,7 +361,7 @@ O(\alpha t + \log(1/\epsilon))
 \textbf{Optimal!}
 \end{alertblock}
 
-\vspace{0.2cm}
+\vspace{0.05cm}
 Achieves lower bound for Hamiltonian simulation
 \end{columns}
 \end{frame}
@@ -375,13 +375,13 @@ Achieves lower bound for Hamiltonian simulation
 {\Large \textbf{The Grand Unification of Quantum Algorithms}}
 \end{center}
 
-\vspace{0.5cm}
+\vspace{0.01cm}
 
 \begin{block}{Core Principle}
 Apply polynomial transformations to \emph{singular values} of block-encoded matrices
 \end{block}
 
-\vspace{0.3cm}
+\vspace{0.01cm}
 
 \begin{columns}
 \column{0.5\textwidth}
@@ -400,7 +400,6 @@ Apply polynomial transformations to \emph{singular values} of block-encoded matr
 \begin{equation*}
 U_{\text{QSVT}} = \prod_{k=0}^{d} e^{i\phi_k \Pi_0} \cdot \text{Block}(A)
 \end{equation*}
-
 \begin{alertblock}{Complexity}
 $O(d)$ queries where
 \begin{equation*}
@@ -468,14 +467,14 @@ QSVT provides a \emph{systematic framework} for designing quantum algorithms wit
 \begin{frame}{Multi-Dimensional Comparison}
 \begin{figure}
 \centering
-\includegraphics[width=0.7\textwidth]{algorithm_radar.png}
+\includegraphics[width=0.57\textwidth]{algorithm_radar.png}
 \end{figure}
 \end{frame}
 
 \begin{frame}{Benchmark Results: Circuit Metrics}
 \begin{figure}
 \centering
-\includegraphics[width=0.95\textwidth]{benchmark_results.png}
+\includegraphics[width=0.66\textwidth]{benchmark_results.png}
 \caption{Comprehensive benchmark on 3-qubit Heisenberg Hamiltonian, $t=1.0$}
 \end{figure}
 \end{frame}
@@ -518,7 +517,7 @@ QSVT & 7 & 138 & 468 & 188 & 21 & $8.2 \times 10^{-5}$ \\
 Grover's algorithm can be expressed as Hamiltonian evolution!
 \end{block}
 
-\vspace{0.3cm}
+\vspace{0.02cm}
 
 \begin{columns}
 \column{0.5\textwidth}
@@ -545,7 +544,7 @@ H = I - 2|s\rangle\langle s| - 2|w\rangle\langle w|
 One iteration $\Leftrightarrow$ $t = \pi/4$
 \end{columns}
 
-\vspace{0.5cm}
+\vspace{0.01cm}
 
 \begin{alertblock}{Implementation Methods}
 \begin{enumerate}
@@ -756,6 +755,72 @@ We now have a complete toolkit for quantum Hamiltonian simulation with provably 
 \end{itemize}
 \end{columns}
 \end{frame}
+
+\begin{frame}{Scope of Exploration: Implementation Refinements}
+\begin{alertblock}{Focus: Moving Toward Resource-Efficient Implementations}
+Refining core algorithms to address implementation complexities for practical use.
+\end{alertblock}
+
+\vspace{0.02cm}
+
+\textbf{Current Simplifications $\to$ Future Refinements:}
+\begin{itemize}
+    \item[1.] \textbf{QSP:} Simplified phase computation was used.
+    \begin{itemize}
+        \item \textbf{Refinement:} Implement complex \textbf{phase finding} via optimization algorithms.
+        \item \emph{Note:} Phase finding is a known computational challenge; recent work (e.g., "QSP without angle finding") is key.
+    \end{itemize}
+    \vspace{0.01cm}
+    \item[2.] \textbf{Qubitization:} Involved simplified \texttt{SELECT} operation.
+    \begin{itemize}
+        \item \textbf{Refinement:} Implement optimal \texttt{SELECT} requiring \textbf{multi-controlled operations} for better circuit synthesis.
+    \end{itemize}
+    \vspace{0.01cm}
+    \item[3.] \textbf{QSVT:} State preparation utilized uniform superposition.
+    \begin{itemize}
+        \item \textbf{Refinement:} Implement optimal \textbf{amplitude encoding} for input states.
+    \end{itemize}
+\end{itemize}
+
+\vspace{0.02cm}
+
+\begin{block}{Goal}
+Move beyond proof-of-concept toward fully \emph{gate-optimized and general} circuit constructions.
+\end{block}
+\end{frame}
+
+\begin{frame}{Scope of Exploration: Further Problems}
+\begin{alertblock}{Focus: Applying QSVT/QSP Framework to New Domains}
+Exploring other quantum problems that can benefit from the optimal complexity of polynomial transforms.
+\end{alertblock}
+
+\vspace{0.3cm}
+
+\textbf{Possible Further Exploration:}
+\begin{itemize}
+    \item[1.] \textbf{QSVT in VQE Problems:}
+    \begin{itemize}
+        \item Apply the QSVT framework to solve VQE problems.
+    \end{itemize}
+    \vspace{0.2cm}
+    \item[2.] \textbf{QSVT for Arithmetic Circuits:}
+    \begin{itemize}
+        \item Utilize QSVT to design efficient quantum arithmetic circuits (e.g., matrix inversion for Quantum Linear System Algorithm, or multiplication/division) as polynomial evaluation.
+    \end{itemize}
+    % \vspace{0.2cm}
+    % \item[\textbf{High-Order Trotter/Suzuki:}]
+    % \begin{itemize}
+    %     \item Implement and benchmark a more complex, high-order Suzuki-Trotter decomposition (e.g., 4th order) for comparison against optimal methods.
+    % \end{itemize}
+\end{itemize}
+
+\vspace{0.02cm}
+
+\begin{block}{Theoretical Connection}
+These explorations would reinforce the idea that advanced techniques like QSVT/QSP are \emph{universal tools} for quantum computation.
+\end{block}
+\end{frame}
+
 
 \begin{frame}{Implementation}
 \begin{block}{Complete Framework Implemented}
