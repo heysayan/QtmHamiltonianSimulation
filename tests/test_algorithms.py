@@ -163,6 +163,32 @@ def test_grover_via_qsvt():
     assert circuit.num_qubits >= n_qubits
 
 
+def test_linear_solver_qsvt():
+    """Test QSVT linear system solver."""
+    from algorithms.linear_solver_qsvt import QSVTLinearSolver
+    import numpy as np
+
+    # Simple 2x2 system
+    A = np.array([[2, 1], [1, 2]], dtype=complex)
+    b = np.array([1, 1], dtype=complex)
+
+    solver = QSVTLinearSolver(A, b)
+    circuit = solver.build_circuit(polynomial_degree=5)
+
+    assert circuit is not None
+    assert circuit.num_qubits >= solver.n_qubits
+
+    # Check that classical solution works
+    x = solver.solve()
+    assert x is not None
+    assert len(x) == len(b)
+
+    # Verify Ax = b
+    result = A @ x
+    error = np.linalg.norm(result - b)
+    assert error < 1e-6
+
+
 if __name__ == "__main__":
     print("Running tests...")
     pytest.main([__file__, "-v"])
