@@ -55,7 +55,7 @@ class QSVTLinearSolver:
             raise ValueError("Matrix and vector dimensions must match")
         
         self.n = self.A.shape[0]
-        self.n_qubits = int(np.ceil(np.log2(self.n)))
+        self.n_qubits = max(1, int(np.ceil(np.log2(self.n))))  # Ensure at least 1 qubit
         
         # Compute matrix properties
         self.singular_values = self._compute_singular_values()
@@ -79,8 +79,9 @@ class QSVTLinearSolver:
         try:
             singular_values = np.linalg.svd(self.A, compute_uv=False)
             return singular_values
-        except:
+        except np.linalg.LinAlgError as e:
             # Fallback for ill-conditioned matrices
+            print(f"Warning: SVD failed ({e}), using eigenvalues instead")
             eigenvalues = np.linalg.eigvals(self.A)
             return np.abs(eigenvalues)
     
@@ -185,7 +186,7 @@ class QSVTLinearSolver:
         k = np.arange(n_nodes)
         # Map Chebyshev nodes from [-1, 1] to [cutoff, 1]
         theta = (2*k + 1) * np.pi / (2*n_nodes)
-        cheb_nodes = 0.5 * ((1 - cutoff) * np.cos(theta) + (1 + cutoff))
+        cheb_nodes = cutoff + 0.5 * (1 - cutoff) * (1 + np.cos(theta))
         
         # Function values at nodes: f(x) = 1/x
         f_values = 1.0 / cheb_nodes
@@ -327,10 +328,11 @@ class QSVTLinearSolver:
                          [control_qubit] + list(system_reg))
             else:
                 qc.append(unitary.to_instruction(), system_reg)
-        except:
-            # If matrix is not unitary, apply approximation
-            # In practice, more sophisticated techniques would be used
-            pass
+        except Exception as e:
+            # If matrix is not unitary or operator creation fails
+            # Log the issue but don't fail the circuit construction
+            import warnings
+            warnings.warn(f"Could not apply matrix as unitary operator: {e}")
     
     def solve(self, polynomial_degree: int = None) -> np.ndarray:
         """
@@ -341,6 +343,9 @@ class QSVTLinearSolver:
             
         Returns:
             Solution vector x
+            
+        Raises:
+            np.linalg.LinAlgError: If the system cannot be solved
         """
         if polynomial_degree is None:
             polynomial_degree = self._estimate_required_degree()
@@ -349,7 +354,7 @@ class QSVTLinearSolver:
         try:
             x_classical = np.linalg.solve(self.A, self.b)
             return x_classical
-        except:
+        except np.linalg.LinAlgError:
             # Use pseudo-inverse for singular matrices
             x_classical = np.linalg.lstsq(self.A, self.b, rcond=None)[0]
             return x_classical

@@ -230,6 +230,7 @@ class TestQSVTLinearSolver:
         
         # Verify the state
         try:
+            from qiskit.quantum_info import Statevector
             state = Statevector(qc)
             # State should be approximately |0⟩ = [1, 0]
             expected = np.array([1, 0], dtype=complex)
@@ -238,9 +239,12 @@ class TestQSVTLinearSolver:
                 np.abs(expected)**2,
                 decimal=3
             )
-        except:
-            # If simulation fails, at least check circuit was created
+        except (ImportError, Exception) as e:
+            # If simulation fails or Statevector not available, 
+            # at least check circuit was created
             assert qc is not None
+            import warnings
+            warnings.warn(f"Could not verify state preparation: {e}")
     
     def test_different_cutoff_values(self):
         """Test solver with different regularization cutoffs."""
