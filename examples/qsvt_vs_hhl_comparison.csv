@@ -1,0 +1,7 @@
+Algorithm,Total Qubits,System Qubits,Ancilla Qubits,Circuit Depth,Total Gates,Single-Qubit Gates,Two-Qubit Gates,CNOT Count,T Count,Query Complexity,Estimated Error,Construction Time (s),Complexity,Test Case
+QSVT,3,1,2,20,35,33,0,0,0,10,0.3745355992499929,0.0023186206817626953,O(κ log(1/ε)),2×2 Well-Conditioned
+HHL,6,1,5,16,24,8,0,0,0,24,1.3655972450961724,0.002231121063232422,O(log(N)κ²/ε),2×2 Well-Conditioned
+QSVT,3,1,2,20,35,33,0,0,0,10,1.0,0.001058816909790039,O(κ log(1/ε)),2×2 Ill-Conditioned
+HHL,20,1,19,58,94,36,0,0,0,1411416,1.089266063566097,0.00894784927368164,O(log(N)κ²/ε),2×2 Ill-Conditioned
+QSVT,5,2,3,20,55,53,0,0,0,10,0.4645497224367903,0.0011532306671142578,O(κ log(1/ε)),4×4 Diagonal
+HHL,7,2,5,18,32,8,0,0,0,32,1.8207963267948966,0.0015251636505126953,O(log(N)κ²/ε),4×4 Diagonal

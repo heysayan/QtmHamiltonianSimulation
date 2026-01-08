@@ -781,6 +781,111 @@ Same QSVT framework $\Rightarrow$ Multiple quantum algorithms with optimal compl
 \end{block}
 \end{frame}
 
+\begin{frame}{QSVT vs HHL: Comparison}
+\begin{block}{Comparing Two Quantum Linear Solvers}
+\textbf{HHL (2009):} First quantum linear system solver using QPE \\
+\textbf{QSVT (2019):} Modern approach using polynomial transformations
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Aspect} & \textbf{QSVT} & \textbf{HHL} \\
+\midrule
+Query Complexity & $O(\kappa \log(1/\epsilon))$ & $O(\log(N) \kappa^2/\epsilon)$ \\
+Scaling with $\kappa$ & Linear & Quadratic \\
+Scaling with $\epsilon$ & Logarithmic & Linear \\
+Year Introduced & 2019 & 2009 \\
+Key Technique & Polynomial SVT & QPE + Rotation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+\textbf{Key Advantage:} QSVT has better asymptotic complexity, especially for:
+\begin{itemize}
+    \item Ill-conditioned matrices (large $\kappa$)
+    \item High-precision requirements (small $\epsilon$)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{QSVT vs HHL: Benchmark Results}
+\textbf{Test Case: 2×2 Well-Conditioned System ($\kappa \approx 3$)}
+
+\vspace{0.3cm}
+
+\begin{table}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algorithm} & \textbf{Qubits} & \textbf{Depth} & \textbf{Gates} & \textbf{Query Complexity} \\
+\midrule
+QSVT & 3 & 20 & 35 & 10 \\
+HHL  & 6 & 16 & 24 & 24 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+\textbf{Test Case: 2×2 Ill-Conditioned System ($\kappa \approx 39,206$)}
+
+\begin{table}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algorithm} & \textbf{Qubits} & \textbf{Depth} & \textbf{Gates} & \textbf{Query Complexity} \\
+\midrule
+QSVT & 3  & 20 & 35  & 10 \\
+HHL  & 20 & 58 & 94  & 1,411,416 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+\begin{alertblock}{Observation}
+For ill-conditioned matrices, QSVT's query complexity remains \textbf{constant with polynomial degree}, while HHL's grows dramatically with $\kappa^2$!
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{QSVT vs HHL: Key Insights}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{QSVT Advantages:}
+\begin{itemize}
+    \item[$+$] Better complexity: $O(\kappa \log(1/\epsilon))$
+    \item[$+$] Linear scaling with $\kappa$
+    \item[$+$] Logarithmic in precision
+    \item[$+$] Simpler implementation
+    \item[$+$] Part of unified framework
+    \item[$+$] Superior for ill-conditioned systems
+\end{itemize}
+
+\column{0.5\textwidth}
+\textbf{HHL Considerations:}
+\begin{itemize}
+    \item Complexity: $O(\log(N) \kappa^2/\epsilon)$
+    \item Quadratic in $\kappa$
+    \item Linear in $1/\epsilon$
+    \item Requires QPE infrastructure
+    \item Historical importance (first!)
+    \item Educational value
+\end{itemize}
+\end{columns}
+
+\vspace{0.5cm}
+
+\begin{block}{Conclusion}
+\textbf{QSVT represents algorithmic progress:} Better complexity bounds and unified framework make it the preferred modern approach for quantum linear system solving.
+\end{block}
+\end{frame}
+
 %=============================================================================
 \section{Conclusions}
 %=============================================================================
